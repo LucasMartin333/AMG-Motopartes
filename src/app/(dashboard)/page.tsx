@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/format";
+import { canViewInventoryValue } from "@/lib/permissions";
 import { allNavItems } from "@/config/navigation";
 import type { DashboardStats } from "@/types/dashboard";
 
@@ -49,6 +50,7 @@ async function fetchDashboardStats(): Promise<DashboardStats> {
 export default function PrincipalPage() {
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === "ADMIN";
+  const showInventoryValue = canViewInventoryValue(session?.user);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["dashboard-stats"],
@@ -68,19 +70,25 @@ export default function PrincipalPage() {
         description="Resumen de tu inventario de repuestos"
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div
+        className={`grid gap-4 sm:grid-cols-2 ${showInventoryValue ? "xl:grid-cols-4" : "xl:grid-cols-3"}`}
+      >
         <KpiCard
           title="Total de productos"
           loading={isLoading}
           value={data ? String(data.totalProducts) : "—"}
           hint="En el catálogo"
         />
-        <KpiCard
-          title="Valor del inventario"
-          loading={isLoading}
-          value={data ? formatCurrency(data.inventoryValue) : "—"}
-          hint="Stock × precio de venta"
-        />
+        {showInventoryValue ? (
+          <KpiCard
+            title="Valor del inventario"
+            loading={isLoading}
+            value={
+              data?.inventoryValue != null ? formatCurrency(data.inventoryValue) : "—"
+            }
+            hint="Stock × precio de venta"
+          />
+        ) : null}
         <Link href="/alertas" className="block">
           <Card className="hover:border-primary/40 h-full transition-colors">
             <CardHeader className="pb-2">

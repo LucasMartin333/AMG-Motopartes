@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-utils";
 
@@ -17,13 +17,17 @@ export async function GET() {
   const auth = await requireAuth();
   if ("error" in auth) return auth.error;
 
+  const isAdmin = auth.user.role === Role.ADMIN;
+
   const [totalProducts, totalSuppliers, inventoryRow, lowStockCountRow, lowStockProducts] =
     await Promise.all([
       prisma.product.count(),
       prisma.supplier.count(),
-      prisma.$queryRaw<[{ value: Prisma.Decimal | null }]>`
-        SELECT COALESCE(SUM(stock * "salePrice"), 0) AS value FROM "Product"
-      `,
+      isAdmin
+        ? prisma.$queryRaw<[{ value: Prisma.Decimal | null }]>`
+            SELECT COALESCE(SUM(stock * "salePrice"), 0) AS value FROM "Product"
+          `
+        : Promise.resolve(null),
       prisma.$queryRaw<[{ count: bigint }]>`
         SELECT COUNT(*)::bigint AS count FROM "Product" WHERE stock <= "minStock"
       `,
@@ -36,12 +40,13 @@ export async function GET() {
       `,
     ]);
 
-  const inventoryValue = Number(inventoryRow[0]?.value ?? 0);
   const lowStockCount = Number(lowStockCountRow[0]?.count ?? 0);
 
   return NextResponse.json({
     totalProducts,
-    inventoryValue,
+    ...(isAdmin && inventoryRow
+      ? { inventoryValue: Number(inventoryRow[0]?.value ?? 0) }
+      : {}),
     lowStockCount,
     totalSuppliers,
     lowStockProducts: lowStockProducts.map((p) => ({

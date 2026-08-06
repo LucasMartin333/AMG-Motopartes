@@ -23,6 +23,14 @@ export function canManageUsers(user: SessionUser | null | undefined) {
   return isAdmin(user);
 }
 
+export function canViewInventoryValue(user: SessionUser | null | undefined) {
+  return isAdmin(user);
+}
+
+export function canRegisterSales(user: SessionUser | null | undefined) {
+  return !!user?.id;
+}
+
 export const adminOnlyRoutes = ["/usuarios"];
 
 export function isRouteAllowedForRole(pathname: string, role: Role) {

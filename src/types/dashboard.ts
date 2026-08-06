@@ -8,7 +8,7 @@ export type LowStockProductSummary = {
 
 export type DashboardStats = {
   totalProducts: number;
-  inventoryValue: number;
+  inventoryValue?: number;
   lowStockCount: number;
   totalSuppliers: number;
   lowStockProducts: LowStockProductSummary[];
