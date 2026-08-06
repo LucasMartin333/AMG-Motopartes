@@ -31,6 +31,10 @@ export function canRegisterSales(user: SessionUser | null | undefined) {
   return !!user?.id;
 }
 
+export function canDeleteSales(user: SessionUser | null | undefined) {
+  return isAdmin(user);
+}
+
 export const adminOnlyRoutes = ["/usuarios"];
 
 export function isRouteAllowedForRole(pathname: string, role: Role) {

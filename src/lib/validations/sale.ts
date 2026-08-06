@@ -13,3 +13,7 @@ export const createSaleSchema = z.object({
 
 export type CreateSaleInput = z.infer<typeof createSaleSchema>;
 export type SaleItemInput = z.infer<typeof saleItemInputSchema>;
+
+export const deleteSaleSchema = z.object({
+  password: z.string().min(1, "Ingresá tu contraseña"),
+});

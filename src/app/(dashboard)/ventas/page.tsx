@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { Eye, Plus, Search, ShoppingCart } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Eye, Plus, Search, ShoppingCart, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/page-header";
 import { SaleDetailSheet } from "@/components/sales/sale-detail-sheet";
 import { SalePosSheet } from "@/components/sales/sale-pos-sheet";
+import { SaleDeleteDialog } from "@/components/sales/sale-delete-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,8 +21,9 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
+import { canDeleteSales } from "@/lib/permissions";
 import { formatCurrency, formatDate } from "@/lib/format";
-import type { SalesResponse } from "@/types/sales";
+import type { SaleListItem, SalesResponse } from "@/types/sales";
 
 const PAGE_SIZE = 25;
 
@@ -33,11 +37,16 @@ async function fetchSales(params: URLSearchParams): Promise<SalesResponse> {
 }
 
 export default function VentasPage() {
+  const { data: session } = useSession();
+  const canDelete = canDeleteSales(session?.user);
+
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [posOpen, setPosOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<SaleListItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const debouncedSearch = useDebounce(search, 300);
 
@@ -56,6 +65,32 @@ export default function VentasPage() {
   function openDetail(id: string) {
     setDetailId(id);
     setDetailOpen(true);
+  }
+
+  async function handleDeleteSale(password: string) {
+    if (!deleteTarget) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/sales/${deleteTarget.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error ?? "Error al eliminar la venta");
+      }
+
+      toast.success("Venta eliminada y stock restaurado");
+      setDeleteTarget(null);
+      void refetch();
+    } catch (error) {
+      throw error;
+    } finally {
+      setDeleting(false);
+    }
   }
 
   const from = !data?.total ? 0 : (page - 1) * PAGE_SIZE + 1;
@@ -103,14 +138,14 @@ export default function VentasPage() {
               <TableHead className="text-center">Ítems</TableHead>
               <TableHead className="text-right">Total</TableHead>
               <TableHead>Notas</TableHead>
-              <TableHead className="w-16" />
+              <TableHead className={canDelete ? "w-24" : "w-16"} />
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading || isFetching
               ? Array.from({ length: 8 }).map((_, i) => (
                   <TableRow key={i}>
-                    {Array.from({ length: 6 }).map((__, j) => (
+                    {Array.from({ length: canDelete ? 7 : 6 }).map((__, j) => (
                       <TableCell key={j}>
                         <Skeleton className="h-8 w-full" />
                       </TableCell>
@@ -132,20 +167,32 @@ export default function VentasPage() {
                         {sale.notes ?? "—"}
                       </TableCell>
                       <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          title="Ver detalle"
-                          onClick={() => openDetail(sale.id)}
-                        >
-                          <Eye className="size-4" />
-                        </Button>
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            title="Ver detalle"
+                            onClick={() => openDetail(sale.id)}
+                          >
+                            <Eye className="size-4" />
+                          </Button>
+                          {canDelete ? (
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              title="Eliminar venta"
+                              onClick={() => setDeleteTarget(sale)}
+                            >
+                              <Trash2 className="text-destructive size-4" />
+                            </Button>
+                          ) : null}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
                 : (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-muted-foreground h-24 text-center">
+                      <TableCell colSpan={canDelete ? 7 : 6} className="text-muted-foreground h-24 text-center">
                         No se encontraron ventas
                       </TableCell>
                     </TableRow>
@@ -192,10 +239,25 @@ export default function VentasPage() {
       <SaleDetailSheet
         saleId={detailId}
         open={detailOpen}
+        canDelete={canDelete}
         onOpenChange={(open) => {
           setDetailOpen(open);
           if (!open) setDetailId(null);
         }}
+        onDeleted={() => {
+          void refetch();
+        }}
+      />
+
+      <SaleDeleteDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        saleLabel={deleteTarget?.user.name}
+        saleTotal={deleteTarget?.total}
+        loading={deleting}
+        onConfirm={handleDeleteSale}
       />
     </div>
   );

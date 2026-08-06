@@ -78,3 +78,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 export async function hashPassword(password: string) {
   return bcrypt.hash(password, 12);
 }
+
+export async function verifyUserPassword(userId: string, password: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { passwordHash: true, active: true },
+  });
+
+  if (!user?.active) {
+    return false;
+  }
+
+  return bcrypt.compare(password, user.passwordHash);
+}
