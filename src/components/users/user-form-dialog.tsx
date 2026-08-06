@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import {
   Select,
   SelectContent,
@@ -49,6 +56,7 @@ export function UserFormDialog({
   onSuccess,
 }: UserFormDialogProps) {
   const isEditing = !!user;
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<CreateUserInput>({
     resolver: zodResolver(
@@ -60,6 +68,7 @@ export function UserFormDialog({
   useEffect(() => {
     if (!open) return;
 
+    setShowPassword(false);
     if (user) {
       form.reset({
         name: user.name,
@@ -138,12 +147,24 @@ export function UserFormDialog({
             <Label htmlFor="password">
               {isEditing ? "Nueva contraseña (opcional)" : "Contraseña temporal"}
             </Label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              {...form.register("password")}
-            />
+            <InputGroup className="h-9">
+              <InputGroupInput
+                id="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                {...form.register("password")}
+              />
+              <InputGroupAddon align="inline-end">
+                <InputGroupButton
+                  type="button"
+                  size="icon-xs"
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  {showPassword ? <EyeOff /> : <Eye />}
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
             {form.formState.errors.password ? (
               <p className="text-destructive text-xs">
                 {form.formState.errors.password.message}

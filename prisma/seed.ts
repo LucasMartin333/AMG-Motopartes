@@ -28,6 +28,8 @@ async function main() {
     },
   });
 
+  // Empleado demo para desarrollo local. En producción, si no existe,
+  // el admin puede crearlo desde /usuarios en la UI.
   const employee = await prisma.user.upsert({
     where: { email: "empleado@taller.com" },
     update: {},

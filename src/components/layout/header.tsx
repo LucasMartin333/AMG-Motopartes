@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, Moon, Sun } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Menu, Moon, Sun, Users } from "lucide-react";
 import { useTheme } from "next-themes";
 import { signOut, useSession } from "next-auth/react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,6 +16,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Sheet,
   SheetContent,
@@ -26,14 +34,39 @@ import { cnLabelRole } from "@/lib/format";
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const { setTheme, theme } = useTheme();
   const { data: session } = useSession();
+  const router = useRouter();
+  const isAdmin = session?.user?.role === "ADMIN";
   const initials = session?.user?.name
     ?.split(" ")
     .map((part) => part[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
+
+  async function handleSignOut() {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      await signOut({ redirect: false });
+      toast.success("Sesión cerrada");
+      router.push("/login");
+      router.refresh();
+    } finally {
+      setSigningOut(false);
+    }
+  }
+
+  function handleAccountClick() {
+    if (isAdmin) {
+      router.push("/usuarios");
+      return;
+    }
+    setProfileOpen(true);
+  }
 
   return (
     <header className="border-border bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30 flex h-14 items-center gap-4 border-b px-4 backdrop-blur">
@@ -96,17 +129,49 @@ export function Header() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleAccountClick}>
+                <Users className="size-4" />
+                {isAdmin ? "Usuarios" : "Mi perfil"}
+              </DropdownMenuItem>
               <DropdownMenuItem
+                disabled={signingOut}
                 onClick={() => {
-                  void signOut({ callbackUrl: "/login", redirect: true });
+                  void handleSignOut();
                 }}
               >
-                Cerrar sesión
+                {signingOut ? "Cerrando sesión..." : "Cerrar sesión"}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
+
+      <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Mi perfil</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <div>
+              <p className="text-muted-foreground text-xs">Nombre</p>
+              <p className="font-medium">{session?.user?.name ?? "—"}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Email</p>
+              <p className="font-medium">{session?.user?.email ?? "—"}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground text-xs">Rol</p>
+              <p className="font-medium">
+                {session?.user?.role ? cnLabelRole(session.user.role) : "—"}
+              </p>
+            </div>
+            <p className="text-muted-foreground border-t pt-3 text-xs">
+              La gestión de usuarios está disponible solo para administradores.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }
