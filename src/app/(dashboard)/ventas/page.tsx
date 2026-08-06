@@ -3,7 +3,7 @@ import { getNavItemByPath } from "@/config/navigation";
 import { notFound } from "next/navigation";
 
 export default function VentasPage() {
-  const module = getNavItemByPath("/ventas");
-  if (!module) notFound();
-  return <ModulePlaceholder module={module} />;
+  const navItem = getNavItemByPath("/ventas");
+  if (!navItem) notFound();
+  return <ModulePlaceholder module={navItem} />;
 }

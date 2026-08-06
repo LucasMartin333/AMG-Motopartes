@@ -19,6 +19,10 @@ export function canManageSuppliers(user: SessionUser | null | undefined) {
   return isAdmin(user);
 }
 
+export function canManageUsers(user: SessionUser | null | undefined) {
+  return isAdmin(user);
+}
+
 export const adminOnlyRoutes = ["/usuarios"];
 
 export function isRouteAllowedForRole(pathname: string, role: Role) {

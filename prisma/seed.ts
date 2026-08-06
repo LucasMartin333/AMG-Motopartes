@@ -4,10 +4,18 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  const passwordHash = await bcrypt.hash(
-    process.env.SEED_ADMIN_PASSWORD ?? "admin1234",
-    12,
-  );
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (!adminPassword) {
+    throw new Error(
+      "Definí SEED_ADMIN_PASSWORD en tu archivo .env antes de ejecutar el seed.",
+    );
+  }
+
+  const employeePassword =
+    process.env.SEED_EMPLOYEE_PASSWORD?.trim() || adminPassword;
+
+  const adminHash = await bcrypt.hash(adminPassword, 12);
+  const employeeHash = await bcrypt.hash(employeePassword, 12);
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@taller.com" },
@@ -15,7 +23,7 @@ async function main() {
     create: {
       email: "admin@taller.com",
       name: "Administrador",
-      passwordHash,
+      passwordHash: adminHash,
       role: Role.ADMIN,
     },
   });
@@ -26,7 +34,7 @@ async function main() {
     create: {
       email: "empleado@taller.com",
       name: "Empleado Demo",
-      passwordHash: await bcrypt.hash("empleado1234", 12),
+      passwordHash: employeeHash,
       role: Role.EMPLOYEE,
     },
   });
@@ -149,6 +157,7 @@ async function main() {
   console.log("Seed completado:");
   console.log(`- Admin: ${admin.email}`);
   console.log(`- Empleado: ${employee.email}`);
+  console.log("- Contraseñas: definidas en SEED_*_PASSWORD (.env local)");
 }
 
 main()

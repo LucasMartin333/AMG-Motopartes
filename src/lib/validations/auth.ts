@@ -14,7 +14,7 @@ export const userSchema = z.object({
     .optional()
     .or(z.literal("")),
   role: z.enum(["ADMIN", "EMPLOYEE"]),
-  active: z.boolean().default(true),
+  active: z.boolean(),
 });
 
 export const createUserSchema = userSchema.extend({

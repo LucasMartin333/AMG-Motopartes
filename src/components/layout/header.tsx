@@ -96,7 +96,11 @@ export function Header() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>
+              <DropdownMenuItem
+                onClick={() => {
+                  void signOut({ callbackUrl: "/login", redirect: true });
+                }}
+              >
                 Cerrar sesión
               </DropdownMenuItem>
             </DropdownMenuContent>

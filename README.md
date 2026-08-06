@@ -17,23 +17,19 @@ Sistema de gestión de inventario para repuestos de motocicletas.
 - **Productos:** CRUD, imágenes, búsqueda, filtros, paginación
 - **Proveedores:** CRUD con teléfono, WhatsApp, email
 - **Relación producto-proveedor:** múltiples proveedores por producto, panel lateral desde productos
+- **Usuarios:** gestión de cuentas y accesos (solo administrador)
 
 ## Configuración local
 
 ```bash
 npm install
-cp .env.example .env   # Completar contraseña y keys
+cp .env.example .env   # Completar DATABASE_URL, secrets y SEED_ADMIN_PASSWORD
 npm run db:migrate
 npm run db:seed
 npm run dev
 ```
 
-### Credenciales demo
-
-| Rol | Email | Contraseña |
-|-----|-------|------------|
-| Admin | `admin@taller.com` | `admin1234` |
-| Empleado | `empleado@taller.com` | `empleado1234` |
+El seed crea el administrador inicial. La contraseña se toma de `SEED_ADMIN_PASSWORD` en tu `.env` local (nunca se documenta en el repositorio). Opcionalmente podés definir `SEED_EMPLOYEE_PASSWORD` para el usuario empleado de desarrollo.
 
 ---
 
@@ -54,7 +50,7 @@ Los empleados pueden **ver** productos y proveedores, pero solo el admin puede c
 
 ### 2. Datos iniciales con seed (desarrollo)
 
-El comando `npm run db:seed` carga usuarios demo, categorías, marcas, productos de ejemplo y un proveedor vinculado. Es útil al configurar el proyecto por primera vez:
+El comando `npm run db:seed` carga usuarios de desarrollo, categorías, marcas, productos de ejemplo y un proveedor vinculado. Las contraseñas de esos usuarios salen de `SEED_ADMIN_PASSWORD` / `SEED_EMPLOYEE_PASSWORD` en tu `.env` local:
 
 ```bash
 npm run db:seed

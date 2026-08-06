@@ -3,7 +3,7 @@ import { getNavItemByPath } from "@/config/navigation";
 import { notFound } from "next/navigation";
 
 export default function ComprasPage() {
-  const module = getNavItemByPath("/compras");
-  if (!module) notFound();
-  return <ModulePlaceholder module={module} />;
+  const navItem = getNavItemByPath("/compras");
+  if (!navItem) notFound();
+  return <ModulePlaceholder module={navItem} />;
 }

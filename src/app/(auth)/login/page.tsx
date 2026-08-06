@@ -62,7 +62,7 @@ function LoginForm() {
               id="email"
               name="email"
               type="email"
-              placeholder="admin@taller.com"
+              placeholder="tu@email.com"
               required
               autoComplete="email"
             />
