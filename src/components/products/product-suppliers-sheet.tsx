@@ -22,7 +22,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/layout/confirm-dialog";
 import { formatCurrency, formatDate } from "@/lib/format";
@@ -93,12 +92,22 @@ export function ProductSuppliersSheet({
     setNewEmail("");
   }
 
+  function handleSheetOpenChange(next: boolean) {
+    if (next) resetForm();
+    onOpenChange(next);
+  }
+
   async function handleAddLink(e: React.FormEvent) {
     e.preventDefault();
     if (!product) return;
 
     setSubmitting(true);
     try {
+      if (mode === "existing" && !supplierId) {
+        toast.error("Seleccioná un proveedor");
+        return;
+      }
+
       const payload =
         mode === "existing"
           ? { supplierId, supplierPrice: Number(supplierPrice), notes: notes || null }
@@ -158,9 +167,15 @@ export function ProductSuppliersSheet({
   const linkedIds = new Set(data?.links.map((l) => l.supplier.id) ?? []);
   const availableSuppliers = supplierOptions.filter((s) => !linkedIds.has(s.id));
 
+  const supplierLabel = supplierId
+    ? (availableSuppliers.find((s) => s.id === supplierId)?.name ??
+      supplierOptions.find((s) => s.id === supplierId)?.name ??
+      "Ninguno")
+    : "Ninguno";
+
   return (
     <>
-      <Sheet open={open} onOpenChange={onOpenChange}>
+      <Sheet open={open} onOpenChange={handleSheetOpenChange}>
         <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-lg">
           <SheetHeader>
             <SheetTitle>Proveedores del producto</SheetTitle>
@@ -274,13 +289,14 @@ export function ProductSuppliersSheet({
                       <div className="space-y-2">
                         <Label>Proveedor</Label>
                         <Select
-                          value={supplierId || null}
-                          onValueChange={(v) => setSupplierId(v ?? "")}
+                          value={supplierId || "none"}
+                          onValueChange={(v) => setSupplierId(v === "none" ? "" : (v ?? ""))}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Seleccionar proveedor" />
+                            <span className="truncate">{supplierLabel}</span>
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="none">Ninguno</SelectItem>
                             {availableSuppliers.map((s) => (
                               <SelectItem key={s.id} value={s.id}>
                                 {s.name}

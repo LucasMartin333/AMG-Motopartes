@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { ImagePlus, Loader2 } from "lucide-react";
+import { ImagePlus, Loader2, Pencil, Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,8 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { productSchema, type ProductInput } from "@/lib/validations/product";
+import { CatalogAddDialog } from "@/components/products/catalog-add-dialog";
+import { CatalogEditDialog } from "@/components/products/catalog-edit-dialog";
 import type { BrandOption, CategoryOption, ProductListItem } from "@/types/products";
 
 type ProductFormDialogProps = {
@@ -32,7 +34,14 @@ type ProductFormDialogProps = {
   product?: ProductListItem | null;
   categories: CategoryOption[];
   brands: BrandOption[];
+  canManageCatalog?: boolean;
   onSuccess: () => void;
+  onCategoryAdded: (item: CategoryOption) => void;
+  onBrandAdded: (item: BrandOption) => void;
+  onCategoryUpdated: (item: CategoryOption) => void;
+  onBrandUpdated: (item: BrandOption) => void;
+  onCategoryDeleted: (id: string) => void;
+  onBrandDeleted: (id: string) => void;
 };
 
 const emptyValues: ProductInput = {
@@ -53,11 +62,22 @@ export function ProductFormDialog({
   product,
   categories,
   brands,
+  canManageCatalog,
   onSuccess,
+  onCategoryAdded,
+  onBrandAdded,
+  onCategoryUpdated,
+  onBrandUpdated,
+  onCategoryDeleted,
+  onBrandDeleted,
 }: ProductFormDialogProps) {
   const isEditing = !!product;
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [addCategoryOpen, setAddCategoryOpen] = useState(false);
+  const [addBrandOpen, setAddBrandOpen] = useState(false);
+  const [editCategoryOpen, setEditCategoryOpen] = useState(false);
+  const [editBrandOpen, setEditBrandOpen] = useState(false);
 
   const form = useForm<ProductInput>({
     resolver: zodResolver(productSchema),
@@ -150,7 +170,11 @@ export function ProductFormDialog({
     categories.find((c) => c.id === categoryId)?.name ?? "Seleccionar categoría";
   const brandLabel = brands.find((b) => b.id === brandId)?.name ?? "Seleccionar marca";
 
+  const selectedCategory = categories.find((c) => c.id === categoryId) ?? null;
+  const selectedBrand = brands.find((b) => b.id === brandId) ?? null;
+
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
@@ -224,7 +248,35 @@ export function ProductFormDialog({
               </div>
 
               <div className="space-y-2">
-                <Label>Categoría</Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label>Categoría</Label>
+                  {canManageCatalog ? (
+                    <div className="flex items-center gap-0.5">
+                      {categoryId ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          className="size-7"
+                          title="Editar categoría"
+                          onClick={() => setEditCategoryOpen(true)}
+                        >
+                          <Pencil className="size-3.5" />
+                        </Button>
+                      ) : null}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground h-7 px-2 text-xs"
+                        onClick={() => setAddCategoryOpen(true)}
+                      >
+                        <Plus className="size-3.5" />
+                        Nueva
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
                 <Select
                   value={categoryId || null}
                   onValueChange={(value) =>
@@ -250,7 +302,35 @@ export function ProductFormDialog({
               </div>
 
               <div className="space-y-2">
-                <Label>Marca</Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label>Marca</Label>
+                  {canManageCatalog ? (
+                    <div className="flex items-center gap-0.5">
+                      {brandId ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          className="size-7"
+                          title="Editar marca"
+                          onClick={() => setEditBrandOpen(true)}
+                        >
+                          <Pencil className="size-3.5" />
+                        </Button>
+                      ) : null}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground h-7 px-2 text-xs"
+                        onClick={() => setAddBrandOpen(true)}
+                      >
+                        <Plus className="size-3.5" />
+                        Nueva
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
                 <Select
                   value={brandId || null}
                   onValueChange={(value) =>
@@ -311,5 +391,57 @@ export function ProductFormDialog({
         </form>
       </DialogContent>
     </Dialog>
+
+    {canManageCatalog ? (
+      <>
+        <CatalogAddDialog
+          open={addCategoryOpen}
+          onOpenChange={setAddCategoryOpen}
+          type="category"
+          onSuccess={(item) => {
+            onCategoryAdded(item);
+            form.setValue("categoryId", item.id, { shouldValidate: true });
+          }}
+        />
+        <CatalogAddDialog
+          open={addBrandOpen}
+          onOpenChange={setAddBrandOpen}
+          type="brand"
+          onSuccess={(item) => {
+            onBrandAdded(item);
+            form.setValue("brandId", item.id, { shouldValidate: true });
+          }}
+        />
+        <CatalogEditDialog
+          key={`form-edit-category-${selectedCategory?.id ?? "none"}-${editCategoryOpen}`}
+          open={editCategoryOpen}
+          onOpenChange={setEditCategoryOpen}
+          type="category"
+          item={selectedCategory}
+          onUpdated={onCategoryUpdated}
+          onDeleted={(id) => {
+            onCategoryDeleted(id);
+            if (categoryId === id) {
+              form.setValue("categoryId", "", { shouldValidate: true });
+            }
+          }}
+        />
+        <CatalogEditDialog
+          key={`form-edit-brand-${selectedBrand?.id ?? "none"}-${editBrandOpen}`}
+          open={editBrandOpen}
+          onOpenChange={setEditBrandOpen}
+          type="brand"
+          item={selectedBrand}
+          onUpdated={onBrandUpdated}
+          onDeleted={(id) => {
+            onBrandDeleted(id);
+            if (brandId === id) {
+              form.setValue("brandId", "", { shouldValidate: true });
+            }
+          }}
+        />
+      </>
+    ) : null}
+    </>
   );
 }

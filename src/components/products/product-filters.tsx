@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Pencil, Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { CatalogAddDialog } from "@/components/products/catalog-add-dialog";
+import { CatalogEditDialog } from "@/components/products/catalog-edit-dialog";
 import {
   getBrandFilterLabel,
   getCategoryFilterLabel,
@@ -34,6 +35,10 @@ type ProductFiltersProps = {
   onStockFilterChange: (value: StockFilter) => void;
   onCategoryAdded: (item: CategoryOption) => void;
   onBrandAdded: (item: BrandOption) => void;
+  onCategoryUpdated: (item: CategoryOption) => void;
+  onBrandUpdated: (item: BrandOption) => void;
+  onCategoryDeleted: (id: string) => void;
+  onBrandDeleted: (id: string) => void;
 };
 
 export function ProductFilters({
@@ -50,9 +55,18 @@ export function ProductFilters({
   onStockFilterChange,
   onCategoryAdded,
   onBrandAdded,
+  onCategoryUpdated,
+  onBrandUpdated,
+  onCategoryDeleted,
+  onBrandDeleted,
 }: ProductFiltersProps) {
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
   const [addBrandOpen, setAddBrandOpen] = useState(false);
+  const [editCategoryOpen, setEditCategoryOpen] = useState(false);
+  const [editBrandOpen, setEditBrandOpen] = useState(false);
+
+  const selectedCategory = categories.find((c) => c.id === categoryId) ?? null;
+  const selectedBrand = brands.find((b) => b.id === brandId) ?? null;
 
   return (
     <>
@@ -78,16 +92,30 @@ export function ProductFilters({
             <div className="flex items-center justify-between gap-2">
               <Label className="text-xs font-medium">Categoría</Label>
               {canManageCatalog ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground h-7 px-2 text-xs"
-                  onClick={() => setAddCategoryOpen(true)}
-                >
-                  <Plus className="size-3.5" />
-                  Nueva
-                </Button>
+                <div className="flex items-center gap-0.5">
+                  {categoryId ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      className="size-7"
+                      title="Editar categoría"
+                      onClick={() => setEditCategoryOpen(true)}
+                    >
+                      <Pencil className="size-3.5" />
+                    </Button>
+                  ) : null}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground h-7 px-2 text-xs"
+                    onClick={() => setAddCategoryOpen(true)}
+                  >
+                    <Plus className="size-3.5" />
+                    Nueva
+                  </Button>
+                </div>
               ) : null}
             </div>
             <Select
@@ -114,16 +142,30 @@ export function ProductFilters({
             <div className="flex items-center justify-between gap-2">
               <Label className="text-xs font-medium">Marca</Label>
               {canManageCatalog ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground h-7 px-2 text-xs"
-                  onClick={() => setAddBrandOpen(true)}
-                >
-                  <Plus className="size-3.5" />
-                  Nueva
-                </Button>
+                <div className="flex items-center gap-0.5">
+                  {brandId ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      className="size-7"
+                      title="Editar marca"
+                      onClick={() => setEditBrandOpen(true)}
+                    >
+                      <Pencil className="size-3.5" />
+                    </Button>
+                  ) : null}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground h-7 px-2 text-xs"
+                    onClick={() => setAddBrandOpen(true)}
+                  >
+                    <Plus className="size-3.5" />
+                    Nueva
+                  </Button>
+                </div>
               ) : null}
             </div>
             <Select
@@ -182,6 +224,32 @@ export function ProductFilters({
         onSuccess={(item) => {
           onBrandAdded(item);
           onBrandChange(item.id);
+        }}
+      />
+
+      <CatalogEditDialog
+        key={`edit-category-${selectedCategory?.id ?? "none"}-${editCategoryOpen}`}
+        open={editCategoryOpen}
+        onOpenChange={setEditCategoryOpen}
+        type="category"
+        item={selectedCategory}
+        onUpdated={onCategoryUpdated}
+        onDeleted={(id) => {
+          onCategoryDeleted(id);
+          if (categoryId === id) onCategoryChange("");
+        }}
+      />
+
+      <CatalogEditDialog
+        key={`edit-brand-${selectedBrand?.id ?? "none"}-${editBrandOpen}`}
+        open={editBrandOpen}
+        onOpenChange={setEditBrandOpen}
+        type="brand"
+        item={selectedBrand}
+        onUpdated={onBrandUpdated}
+        onDeleted={(id) => {
+          onBrandDeleted(id);
+          if (brandId === id) onBrandChange("");
         }}
       />
     </>

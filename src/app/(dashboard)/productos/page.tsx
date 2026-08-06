@@ -126,6 +126,40 @@ export default function ProductosPage() {
     );
   }
 
+  function handleCategoryUpdated(item: CategoryOption) {
+    queryClient.setQueryData<CategoryOption[]>(["categories"], (prev = []) =>
+      prev
+        .map((c) => (c.id === item.id ? item : c))
+        .sort((a, b) => a.name.localeCompare(b.name, "es")),
+    );
+    invalidateProducts();
+  }
+
+  function handleBrandUpdated(item: BrandOption) {
+    queryClient.setQueryData<BrandOption[]>(["brands"], (prev = []) =>
+      prev
+        .map((b) => (b.id === item.id ? item : b))
+        .sort((a, b) => a.name.localeCompare(b.name, "es")),
+    );
+    invalidateProducts();
+  }
+
+  function handleCategoryDeleted(id: string) {
+    queryClient.setQueryData<CategoryOption[]>(["categories"], (prev = []) =>
+      prev.filter((c) => c.id !== id),
+    );
+    if (categoryId === id) setCategoryId("");
+    invalidateProducts();
+  }
+
+  function handleBrandDeleted(id: string) {
+    queryClient.setQueryData<BrandOption[]>(["brands"], (prev = []) =>
+      prev.filter((b) => b.id !== id),
+    );
+    if (brandId === id) setBrandId("");
+    invalidateProducts();
+  }
+
   function openCreate() {
     setEditingProduct(null);
     setFormOpen(true);
@@ -181,6 +215,10 @@ export default function ProductosPage() {
         onStockFilterChange={handleStockFilterChange}
         onCategoryAdded={handleCategoryAdded}
         onBrandAdded={handleBrandAdded}
+        onCategoryUpdated={handleCategoryUpdated}
+        onBrandUpdated={handleBrandUpdated}
+        onCategoryDeleted={handleCategoryDeleted}
+        onBrandDeleted={handleBrandDeleted}
       />
 
       <ProductsTable
@@ -215,7 +253,14 @@ export default function ProductosPage() {
             product={editingProduct}
             categories={categories}
             brands={brands}
+            canManageCatalog={canManage}
             onSuccess={invalidateProducts}
+            onCategoryAdded={handleCategoryAdded}
+            onBrandAdded={handleBrandAdded}
+            onCategoryUpdated={handleCategoryUpdated}
+            onBrandUpdated={handleBrandUpdated}
+            onCategoryDeleted={handleCategoryDeleted}
+            onBrandDeleted={handleBrandDeleted}
           />
 
           <ConfirmDialog
