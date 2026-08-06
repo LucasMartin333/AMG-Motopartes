@@ -1,27 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { LogOut, Menu, Moon, Sun, Users } from "lucide-react";
 import { useTheme } from "next-themes";
+import { LogOut, Menu, Moon, Sun } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Sheet,
   SheetContent,
@@ -30,22 +15,16 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { DEFAULT_AVATAR_COLOR, getInitials } from "@/lib/avatar-colors";
 import { cnLabelRole } from "@/lib/format";
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const { setTheme, theme } = useTheme();
   const { data: session } = useSession();
-  const router = useRouter();
-  const isAdmin = session?.user?.role === "ADMIN";
-  const initials = session?.user?.name
-    ?.split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = getInitials(session?.user?.name);
+  const avatarColor = session?.user?.avatarColor || DEFAULT_AVATAR_COLOR;
 
   async function handleSignOut() {
     if (signingOut) return;
@@ -58,14 +37,6 @@ export function Header() {
     } finally {
       window.location.assign(new URL("/login", window.location.origin).href);
     }
-  }
-
-  function handleAccountClick() {
-    if (isAdmin) {
-      router.push("/usuarios");
-      return;
-    }
-    setProfileOpen(true);
   }
 
   return (
@@ -104,7 +75,6 @@ export function Header() {
             <span className="sr-only">Cambiar tema</span>
           </Button>
 
-          {/* Botón siempre visible: no depende del menú del avatar */}
           <Button
             type="button"
             variant="outline"
@@ -122,76 +92,28 @@ export function Header() {
             <span className="sm:hidden">{signingOut ? "..." : "Salir"}</span>
           </Button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button variant="ghost" className="relative size-9 rounded-full">
-                  <Avatar>
-                    <AvatarFallback>{initials ?? "U"}</AvatarFallback>
-                  </Avatar>
-                </Button>
-              }
-            />
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>
-                <div className="flex flex-col">
-                  <span>{session?.user?.name}</span>
-                  <span className="text-muted-foreground text-xs font-normal">
-                    {session?.user?.email}
-                  </span>
-                  {session?.user?.role ? (
-                    <span className="text-muted-foreground text-xs font-normal">
-                      {cnLabelRole(session.user.role)}
-                    </span>
-                  ) : null}
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleAccountClick}>
-                <Users className="size-4" />
-                {isAdmin ? "Usuarios" : "Mi perfil"}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                disabled={signingOut}
-                onClick={() => {
-                  void handleSignOut();
-                }}
+          <div className="flex items-center gap-2 pl-1">
+            <Avatar className="pointer-events-none size-9 select-none" aria-hidden>
+              <AvatarFallback
+                className="text-sm font-medium text-white"
+                style={{ backgroundColor: avatarColor }}
               >
-                <LogOut className="size-4" />
-                {signingOut ? "Cerrando sesión..." : "Cerrar sesión"}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="hidden min-w-0 sm:block">
+              <p className="truncate text-sm font-medium leading-tight">
+                {session?.user?.name}
+              </p>
+              {session?.user?.role ? (
+                <p className="text-muted-foreground truncate text-xs leading-tight">
+                  {cnLabelRole(session.user.role)}
+                </p>
+              ) : null}
+            </div>
+          </div>
         </div>
       </div>
-
-      <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Mi perfil</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 text-sm">
-            <div>
-              <p className="text-muted-foreground text-xs">Nombre</p>
-              <p className="font-medium">{session?.user?.name ?? "—"}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground text-xs">Email</p>
-              <p className="font-medium">{session?.user?.email ?? "—"}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground text-xs">Rol</p>
-              <p className="font-medium">
-                {session?.user?.role ? cnLabelRole(session.user.role) : "—"}
-              </p>
-            </div>
-            <p className="text-muted-foreground border-t pt-3 text-xs">
-              La gestión de usuarios está disponible solo para administradores.
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
     </header>
   );
 }

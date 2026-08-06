@@ -22,6 +22,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
 import { canManageUsers } from "@/lib/permissions";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { DEFAULT_AVATAR_COLOR, getInitials } from "@/lib/avatar-colors";
 import { cnLabelRole, formatDate } from "@/lib/format";
 import type { UserListItem, UsersResponse } from "@/types/users";
 
@@ -96,6 +98,7 @@ export default function UsuariosPage() {
           email: user.email,
           role: user.role,
           active: !user.active,
+          avatarColor: user.avatarColor,
           password: "",
         }),
       });
@@ -181,7 +184,22 @@ export default function UsuariosPage() {
               : data?.items.length
                 ? data.items.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2.5">
+                          <Avatar size="sm" className="pointer-events-none">
+                            <AvatarFallback
+                              className="text-[10px] font-semibold text-white"
+                              style={{
+                                backgroundColor:
+                                  user.avatarColor || DEFAULT_AVATAR_COLOR,
+                              }}
+                            >
+                              {getInitials(user.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">{user.name}</span>
+                        </div>
+                      </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{cnLabelRole(user.role)}</TableCell>
                       <TableCell>

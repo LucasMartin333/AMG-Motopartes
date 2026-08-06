@@ -4,6 +4,7 @@ export type UserListItem = {
   email: string;
   role: "ADMIN" | "EMPLOYEE";
   active: boolean;
+  avatarColor: string;
   createdAt: string;
 };
 

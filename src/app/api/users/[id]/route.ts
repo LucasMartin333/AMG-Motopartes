@@ -11,6 +11,7 @@ const userSelect = {
   email: true,
   role: true,
   active: true,
+  avatarColor: true,
   createdAt: true,
 } satisfies Prisma.UserSelect;
 
@@ -119,6 +120,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     email,
     role: nextRole,
     active: nextActive,
+    avatarColor: data.avatarColor,
   };
 
   if (password) {

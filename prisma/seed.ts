@@ -19,12 +19,13 @@ async function main() {
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@taller.com" },
-    update: {},
+    update: { avatarColor: "#6366f1" },
     create: {
       email: "admin@taller.com",
       name: "Administrador",
       passwordHash: adminHash,
       role: Role.ADMIN,
+      avatarColor: "#6366f1",
     },
   });
 
@@ -32,12 +33,13 @@ async function main() {
   // el admin puede crearlo desde /usuarios en la UI.
   const employee = await prisma.user.upsert({
     where: { email: "empleado@taller.com" },
-    update: {},
+    update: { avatarColor: "#10b981" },
     create: {
       email: "empleado@taller.com",
       name: "Empleado Demo",
       passwordHash: employeeHash,
       role: Role.EMPLOYEE,
+      avatarColor: "#10b981",
     },
   });
 

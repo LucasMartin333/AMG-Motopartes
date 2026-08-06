@@ -4,6 +4,7 @@ import Credentials from "next-auth/providers/credentials";
 import { Role } from "@prisma/client";
 import { authConfig } from "@/lib/auth.config";
 import { prisma } from "@/lib/prisma";
+import { DEFAULT_AVATAR_COLOR } from "@/lib/avatar-colors";
 
 declare module "next-auth" {
   interface Session {
@@ -12,11 +13,13 @@ declare module "next-auth" {
       email: string;
       name: string;
       role: Role;
+      avatarColor: string;
     };
   }
 
   interface User {
     role: Role;
+    avatarColor: string;
   }
 }
 
@@ -24,6 +27,7 @@ declare module "@auth/core/jwt" {
   interface JWT {
     id: string;
     role: Role;
+    avatarColor: string;
   }
 }
 
@@ -64,6 +68,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           name: user.name,
           role: user.role,
+          avatarColor: user.avatarColor || DEFAULT_AVATAR_COLOR,
         };
       },
     }),

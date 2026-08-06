@@ -27,11 +27,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   createUserSchema,
   userSchema,
   type CreateUserInput,
 } from "@/lib/validations/auth";
+import {
+  AVATAR_COLORS,
+  DEFAULT_AVATAR_COLOR,
+  getInitials,
+  isAvatarColor,
+  type AvatarColor,
+} from "@/lib/avatar-colors";
+import { cn } from "@/lib/utils";
 import type { UserListItem } from "@/types/users";
 
 type UserFormDialogProps = {
@@ -47,6 +56,7 @@ const emptyValues: CreateUserInput = {
   password: "",
   role: "EMPLOYEE",
   active: true,
+  avatarColor: DEFAULT_AVATAR_COLOR,
 };
 
 export function UserFormDialog({
@@ -76,11 +86,17 @@ export function UserFormDialog({
         password: "",
         role: user.role,
         active: user.active,
+        avatarColor: isAvatarColor(user.avatarColor)
+          ? user.avatarColor
+          : DEFAULT_AVATAR_COLOR,
       });
     } else {
       form.reset(emptyValues);
     }
   }, [open, user, form]);
+
+  const watchedName = form.watch("name");
+  const watchedColor = form.watch("avatarColor");
 
   async function onSubmit(values: CreateUserInput) {
     const payload = {
@@ -88,6 +104,7 @@ export function UserFormDialog({
       email: values.email.trim().toLowerCase(),
       role: values.role,
       active: values.active,
+      avatarColor: values.avatarColor,
       password: values.password?.trim() ?? "",
     };
 
@@ -213,6 +230,51 @@ export function UserFormDialog({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-3">
+            <Label>Color del avatar</Label>
+            <div className="flex items-center gap-4">
+              <Avatar className="size-12">
+                <AvatarFallback
+                  className="text-sm font-semibold text-white"
+                  style={{ backgroundColor: watchedColor }}
+                >
+                  {getInitials(watchedName)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-wrap gap-2">
+                {AVATAR_COLORS.map((color) => {
+                  const selected = watchedColor === color;
+                  return (
+                    <button
+                      key={color}
+                      type="button"
+                      title={color}
+                      aria-label={`Color ${color}`}
+                      aria-pressed={selected}
+                      className={cn(
+                        "size-7 rounded-full border-2 transition-transform",
+                        selected
+                          ? "border-foreground scale-110"
+                          : "border-transparent hover:scale-105",
+                      )}
+                      style={{ backgroundColor: color }}
+                      onClick={() =>
+                        form.setValue("avatarColor", color as AvatarColor, {
+                          shouldValidate: true,
+                        })
+                      }
+                    />
+                  );
+                })}
+              </div>
+            </div>
+            {form.formState.errors.avatarColor ? (
+              <p className="text-destructive text-xs">
+                {form.formState.errors.avatarColor.message}
+              </p>
+            ) : null}
           </div>
 
           {form.formState.errors.root ? (

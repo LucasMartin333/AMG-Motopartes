@@ -16,7 +16,6 @@ export type NavItem = {
   icon: LucideIcon;
   adminOnly?: boolean;
   description: string;
-  phase: number;
 };
 
 export type NavGroup = {
@@ -32,10 +31,9 @@ export const navigationGroups: NavGroup[] = [
     items: [
       {
         href: "/",
-        label: "Dashboard",
+        label: "Principal",
         icon: LayoutDashboard,
-        description: "Resumen y accesos rápidos al sistema",
-        phase: 1,
+        description: "Resumen del inventario y accesos rápidos",
       },
     ],
   },
@@ -48,21 +46,18 @@ export const navigationGroups: NavGroup[] = [
         label: "Productos",
         icon: Package,
         description: "Catálogo de repuestos, stock y precios",
-        phase: 2,
       },
       {
         href: "/proveedores",
         label: "Proveedores",
         icon: Truck,
         description: "Contactos y precios mayoristas",
-        phase: 2,
       },
       {
         href: "/alertas",
         label: "Alertas",
         icon: AlertTriangle,
         description: "Productos con stock bajo el mínimo",
-        phase: 2,
       },
     ],
   },
@@ -75,21 +70,18 @@ export const navigationGroups: NavGroup[] = [
         label: "Compras",
         icon: ShoppingCart,
         description: "Ingresos de mercadería y actualización de stock",
-        phase: 3,
       },
       {
         href: "/ventas",
         label: "Ventas",
         icon: Wrench,
         description: "Salidas de repuestos y registro de ventas",
-        phase: 3,
       },
       {
         href: "/movimientos",
         label: "Movimientos",
         icon: ArrowLeftRight,
         description: "Historial de cambios de stock",
-        phase: 3,
       },
     ],
   },
@@ -103,7 +95,6 @@ export const navigationGroups: NavGroup[] = [
         icon: Users,
         adminOnly: true,
         description: "Gestión de cuentas y roles del equipo",
-        phase: 2,
       },
     ],
   },

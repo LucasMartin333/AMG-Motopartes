@@ -1,4 +1,9 @@
 import { z } from "zod";
+import { AVATAR_COLORS } from "@/lib/avatar-colors";
+
+const avatarColorSchema = z.enum(AVATAR_COLORS, {
+  message: "Color de avatar inválido",
+});
 
 export const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -15,6 +20,7 @@ export const userSchema = z.object({
     .or(z.literal("")),
   role: z.enum(["ADMIN", "EMPLOYEE"]),
   active: z.boolean(),
+  avatarColor: avatarColorSchema,
 });
 
 export const createUserSchema = userSchema.extend({

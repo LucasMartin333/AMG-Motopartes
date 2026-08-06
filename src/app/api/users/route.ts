@@ -14,6 +14,7 @@ const userSelect = {
   email: true,
   role: true,
   active: true,
+  avatarColor: true,
   createdAt: true,
 } satisfies Prisma.UserSelect;
 
@@ -88,6 +89,7 @@ export async function POST(request: NextRequest) {
       passwordHash,
       role: data.role as Role,
       active: data.active,
+      avatarColor: data.avatarColor,
     },
     select: userSelect,
   });

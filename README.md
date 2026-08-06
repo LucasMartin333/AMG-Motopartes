@@ -13,7 +13,7 @@ Sistema de gestión de inventario para repuestos de motocicletas.
 ## Módulos implementados
 
 - Autenticación con roles
-- Dashboard y layout responsive
+- Pantalla Principal y layout responsive
 - **Productos:** CRUD, imágenes, búsqueda, filtros, paginación
 - **Proveedores:** CRUD con teléfono, WhatsApp, email
 - **Relación producto-proveedor:** múltiples proveedores por producto, panel lateral desde productos
@@ -36,9 +36,9 @@ El seed crea el administrador inicial. La contraseña se toma de `SEED_ADMIN_PAS
 En producción el administrador puede crear cuentas de empleado desde **Usuarios** (`/usuarios`):
 
 1. Ingresá como administrador.
-2. Abrí el menú del avatar (arriba a la derecha) → **Usuarios**, o andá a `/usuarios` desde el menú lateral.
-3. Creá un usuario con rol **Empleado**, estado **Activo** y una contraseña temporal.
-4. Cerrá sesión y entrá con ese email y contraseña para verificar el acceso de solo lectura (productos/proveedores/dashboard sin crear ni editar).
+2. Andá a **Usuarios** desde el menú lateral (`/usuarios`).
+3. Creá un usuario con rol **Empleado**, estado **Activo**, color de avatar y una contraseña temporal.
+4. Cerrá sesión y entrá con ese email y contraseña para verificar el acceso de solo lectura (productos/proveedores/Principal sin crear ni editar).
 
 Si el empleado demo del seed no existe en producción, crealo desde esa misma pantalla; no hace falta volver a correr el seed solo por eso.
 
