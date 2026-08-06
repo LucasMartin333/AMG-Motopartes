@@ -22,7 +22,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { productSchema, type ProductInput } from "@/lib/validations/product";
 import type { BrandOption, CategoryOption, ProductListItem } from "@/types/products";
@@ -144,6 +143,12 @@ export function ProductFormDialog({
   }
 
   const imageUrl = form.watch("imageUrl");
+  const categoryId = form.watch("categoryId");
+  const brandId = form.watch("brandId");
+
+  const categoryLabel =
+    categories.find((c) => c.id === categoryId)?.name ?? "Seleccionar categoría";
+  const brandLabel = brands.find((b) => b.id === brandId)?.name ?? "Seleccionar marca";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -221,13 +226,13 @@ export function ProductFormDialog({
               <div className="space-y-2">
                 <Label>Categoría</Label>
                 <Select
-                  value={form.watch("categoryId") || null}
+                  value={categoryId || null}
                   onValueChange={(value) =>
                     form.setValue("categoryId", value ?? "", { shouldValidate: true })
                   }
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Seleccionar" />
+                    <span className="truncate">{categoryLabel}</span>
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((cat) => (
@@ -247,13 +252,13 @@ export function ProductFormDialog({
               <div className="space-y-2">
                 <Label>Marca</Label>
                 <Select
-                  value={form.watch("brandId") || null}
+                  value={brandId || null}
                   onValueChange={(value) =>
                     form.setValue("brandId", value ?? "", { shouldValidate: true })
                   }
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Seleccionar" />
+                    <span className="truncate">{brandLabel}</span>
                   </SelectTrigger>
                   <SelectContent>
                     {brands.map((brand) => (
