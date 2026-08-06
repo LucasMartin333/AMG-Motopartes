@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Menu, Moon, Sun, Users } from "lucide-react";
+import { LogOut, Menu, Moon, Sun, Users } from "lucide-react";
 import { useTheme } from "next-themes";
 import { signOut, useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -53,10 +53,11 @@ export function Header() {
     try {
       await signOut({ redirect: false });
       toast.success("Sesión cerrada");
-      router.push("/login");
-      router.refresh();
+    } catch {
+      toast.error("No se pudo cerrar la sesión");
     } finally {
-      setSigningOut(false);
+      // Navegación dura: limpia estado del App Router y evita volver al dashboard.
+      window.location.assign(new URL("/login", window.location.origin).href);
     }
   }
 
@@ -133,14 +134,21 @@ export function Header() {
                 <Users className="size-4" />
                 {isAdmin ? "Usuarios" : "Mi perfil"}
               </DropdownMenuItem>
-              <DropdownMenuItem
-                disabled={signingOut}
-                onClick={() => {
-                  void handleSignOut();
-                }}
-              >
-                {signingOut ? "Cerrando sesión..." : "Cerrar sesión"}
-              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <div className="p-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-8 w-full justify-start gap-1.5 px-1.5 text-sm font-normal"
+                  disabled={signingOut}
+                  onClick={() => {
+                    void handleSignOut();
+                  }}
+                >
+                  <LogOut className="size-4" />
+                  {signingOut ? "Cerrando sesión..." : "Cerrar sesión"}
+                </Button>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

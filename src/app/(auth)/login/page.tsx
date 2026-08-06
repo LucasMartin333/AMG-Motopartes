@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/card";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
   const [loading, setLoading] = useState(false);
@@ -50,8 +49,11 @@ function LoginForm() {
       return;
     }
 
-    router.push(callbackUrl);
-    router.refresh();
+    // Navegación dura para asegurar cookie de sesión y evitar estado viejo.
+    const nextUrl = callbackUrl.startsWith("/")
+      ? new URL(callbackUrl, window.location.origin).href
+      : new URL("/", window.location.origin).href;
+    window.location.assign(nextUrl);
   }
 
   return (

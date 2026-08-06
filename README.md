@@ -114,8 +114,8 @@ gh repo create inventario-motos --public --source=. --remote=origin --push
 |----------|-------|
 | `DATABASE_URL` | URL pooler `:6543` de Supabase |
 | `DIRECT_URL` | URL session `:5432` de Supabase |
-| `NEXTAUTH_SECRET` | Secreto aleatorio largo |
-| `NEXTAUTH_URL` | `https://tu-proyecto.vercel.app` |
+| `NEXTAUTH_SECRET` o `AUTH_SECRET` | Secreto aleatorio largo |
+| `NEXTAUTH_URL` o `AUTH_URL` | `https://amg-motopartes.vercel.app` (Production) |
 | `SUPABASE_URL` | URL del proyecto Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key |
 | `SUPABASE_STORAGE_BUCKET` | `product-images` |
