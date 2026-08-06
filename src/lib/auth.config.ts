@@ -11,10 +11,11 @@ export const authConfig = {
       const pathname = request.nextUrl.pathname;
       const isLoggedIn = !!auth?.user;
       const isAuthPage = pathname.startsWith("/login");
+      const isSignOutPage = pathname.startsWith("/cerrar-sesion");
       const isApiAuth = pathname.startsWith("/api/auth");
       const isPublicApi = pathname.startsWith("/api/health");
 
-      if (isApiAuth || isPublicApi) {
+      if (isApiAuth || isPublicApi || isSignOutPage) {
         return true;
       }
 

@@ -56,7 +56,6 @@ export function Header() {
     } catch {
       toast.error("No se pudo cerrar la sesión");
     } finally {
-      // Navegación dura: limpia estado del App Router y evita volver al dashboard.
       window.location.assign(new URL("/login", window.location.origin).href);
     }
   }
@@ -105,6 +104,24 @@ export function Header() {
             <span className="sr-only">Cambiar tema</span>
           </Button>
 
+          {/* Botón siempre visible: no depende del menú del avatar */}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            disabled={signingOut}
+            onClick={() => {
+              void handleSignOut();
+            }}
+          >
+            <LogOut className="size-4" />
+            <span className="hidden sm:inline">
+              {signingOut ? "Cerrando..." : "Cerrar sesión"}
+            </span>
+            <span className="sm:hidden">{signingOut ? "..." : "Salir"}</span>
+          </Button>
+
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
@@ -135,20 +152,15 @@ export function Header() {
                 {isAdmin ? "Usuarios" : "Mi perfil"}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <div className="p-1">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="h-8 w-full justify-start gap-1.5 px-1.5 text-sm font-normal"
-                  disabled={signingOut}
-                  onClick={() => {
-                    void handleSignOut();
-                  }}
-                >
-                  <LogOut className="size-4" />
-                  {signingOut ? "Cerrando sesión..." : "Cerrar sesión"}
-                </Button>
-              </div>
+              <DropdownMenuItem
+                disabled={signingOut}
+                onClick={() => {
+                  void handleSignOut();
+                }}
+              >
+                <LogOut className="size-4" />
+                {signingOut ? "Cerrando sesión..." : "Cerrar sesión"}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
